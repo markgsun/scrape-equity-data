@@ -56,6 +56,7 @@ def yahoo_hist_px(stock, day_end, day_start):
     dt_start = dt.datetime.strptime(day_start,'%Y%m%d')
     start = dt2epoch(dt_start)
     
+    # Initialize price table
     px_table = None
     
     while(dt_temp>=dt_start):
@@ -80,16 +81,18 @@ def yahoo_hist_px(stock, day_end, day_start):
         # Convert table to dataframe
         table_pd = pd.read_html(table_tree)
         px_table_temp = table_pd[0].iloc[0:-1,:].set_index('Date')
+        
+        # If no new data, exit while loop
         if px_table_temp.empty:
             break
+        # Else add append new data to price table if it exists, or create price table if not
         else:    
             dt_temp = dt.datetime.strptime(px_table_temp.index[-1],'%b %d, %Y')
             if px_table is not None:
                 px_table = px_table.append(px_table_temp)
             else:
                 px_table = px_table_temp
-        
+    
+    # Add stock name
     px_table['Stock'] = stock
     return px_table
-
-test = yahoo_hist_px('MSFT','20200504','20190404')
