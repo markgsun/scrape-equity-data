@@ -50,29 +50,45 @@ def header_function(subdomain):
     return hdrs
 
 # Main function
-def yahoo_hist_px(stock, ndays):
-
+def yahoo_hist_px(stock, day_end, day_start):
     # Setup
-    dt_end = dt.datetime.today()
-    dt_start = dt_end - dt.timedelta(days = ndays)
-    end = dt2epoch(dt_end)
+    dt_temp = dt.datetime.strptime(day_end,'%Y%m%d')
+    dt_start = dt.datetime.strptime(day_start,'%Y%m%d')
     start = dt2epoch(dt_start)
     
-    sub = subdomain(stock, start, end)
-    header = header_function(sub)
+    px_table = None
     
-    # Send request
-    base_url = 'https://finance.yahoo.com'
-    url = base_url + sub
-    page = requests.get(url, headers=header)
-    
-    # Read webpage
-    element_html = html.fromstring(page.content)
-    table = element_html.xpath('//table')
-    table_tree = lxml.etree.tostring(table[0], method = 'xml')
-    
-    # Conver table to dataframe
-    table_pd = pd.read_html(table_tree)
-    px_table = table_pd[0].iloc[0:-1,:]
-    
+    while(dt_temp>=dt_start):
+        # Dates
+        dt_end = dt_temp
+        end = dt2epoch(dt_end)
+        
+        # Domain and header
+        sub = subdomain(stock, start, end)
+        header = header_function(sub)
+        
+        # Send request
+        base_url = 'https://finance.yahoo.com'
+        url = base_url + sub
+        page = requests.get(url, headers=header)
+        
+        # Read webpage
+        element_html = html.fromstring(page.content)
+        table = element_html.xpath('//table')
+        table_tree = lxml.etree.tostring(table[0], method = 'xml')
+        
+        # Convert table to dataframe
+        table_pd = pd.read_html(table_tree)
+        px_table_temp = table_pd[0].iloc[0:-1,:].set_index('Date')
+        if px_table_temp.empty:
+            break
+        else:    
+            dt_temp = dt.datetime.strptime(px_table_temp.index[-1],'%b %d, %Y')
+            if px_table is not None:
+                px_table = px_table.append(px_table_temp)
+            else:
+                px_table = px_table_temp
+        
     return px_table
+
+test = yahoo_hist_px('MSFT','20200504','20190404')
