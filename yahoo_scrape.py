@@ -104,5 +104,3 @@ def yahoo_hist_px(stock, day_end, day_start):
     px_table['Key'] = px_table['Stock']+'_'+px_table['Date']
     px_table = px_table.set_index('Key')
     return px_table
-
-test = yahoo_hist_px('MSFT','20200504','20190504')
