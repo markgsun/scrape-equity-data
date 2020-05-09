@@ -103,4 +103,8 @@ def yahoo_hist_px(stock, day_end, day_start):
     px_table['Date'] = px_table.index
     px_table['Key'] = px_table['Stock']+'_'+px_table['Date']
     px_table = px_table.set_index('Key')
+    
+    # Remove stars from headers
+    px_table.columns = px_table.columns.str.replace('*','')
+    
     return px_table
