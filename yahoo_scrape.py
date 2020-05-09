@@ -92,7 +92,17 @@ def yahoo_hist_px(stock, day_end, day_start):
                 px_table = px_table.append(px_table_temp)
             else:
                 px_table = px_table_temp
+                
+    # Convert to numeric
+    px_table = px_table.apply(pd.to_numeric, errors = 'coerce').dropna()
     
     # Add stock name
     px_table['Stock'] = stock
+    
+    # Add new primary key
+    px_table['Date'] = px_table.index
+    px_table['Key'] = px_table['Stock']+'_'+px_table['Date']
+    px_table = px_table.set_index('Key')
     return px_table
+
+test = yahoo_hist_px('MSFT','20200504','20190504')
