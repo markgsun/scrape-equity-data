@@ -29,8 +29,19 @@ def yahoo_hist_px2db(stock, day_end, day_start):
     # Use yahoo_scrape to pull data
     hist_px = scrape.yahoo_hist_px(stock, day_end, day_start)
     
-    # Load pulled data to table
+    # Load pulled data to staging
     hist_px.to_sql(name='EquityPxStage', con=engine, if_exists = 'replace', index=False)
+    
+    # Use SQL to merge staging to tbale
+    engine.execute('''
+                   INSERT INTO EquityPx
+                       SELECT * FROM EquityPxStage
+                       WHERE NOT EXISTS (SELECT 1 FROM EquityPx
+                                         WHERE EquityPxStage.Stock = EquityPx.Stock
+                                         AND EquityPxStage.Date = EquityPx.Date)
+                   ''')
 
-# Execute
-yahoo_hist_px2db('TSLA','20200501','20200401')
+# Execution
+if __name__ == '__main__':
+    # Test
+    yahoo_hist_px2db('MSFT','20200501','20200301')
