@@ -4,7 +4,7 @@ Created on Sat May  9 09:51:53 2020
 
 @author: markg
 
-Loads data into FinancialData database staging table
+Loads data into FinancialData database staging table and merges to true table
 """
 
 import yahoo_scrape as scrape
