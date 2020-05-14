@@ -21,7 +21,7 @@ def sqlconn(db):
     engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(params))
     return engine
 
-# Pull data and load to database
+# Pull yahoo data and load to database
 def yahoo_hist_px2db(stock, day_end, day_start):
     # Connect to database
     engine = sqlconn('FinancialData')
@@ -29,19 +29,42 @@ def yahoo_hist_px2db(stock, day_end, day_start):
     # Use yahoo_scrape to pull data
     hist_px = scrape.yahoo_hist_px(stock, day_end, day_start)
     
-    # Load pulled data to staging
-    hist_px.to_sql(name='EquityPxStage', con=engine, if_exists = 'replace', index=False)
+    # Equity/Index table
+    if stock == '%5EGSPC':
+        table = 'IndexPx'
+    else:
+        table = 'EquityPx'
     
-    # Use SQL to merge staging to tbale
+    # Load pulled data to staging
+    hist_px.to_sql(name=table+'Stage', con=engine, if_exists = 'replace', index=False)
+    
+    # Use SQL to merge staging to table
     engine.execute('''
-                   INSERT INTO EquityPx
-                       SELECT * FROM EquityPxStage
-                       WHERE NOT EXISTS (SELECT 1 FROM EquityPx
-                                         WHERE EquityPxStage.Stock = EquityPx.Stock
-                                         AND EquityPxStage.Date = EquityPx.Date)
+                   INSERT INTO {0}
+                       SELECT * FROM {0}Stage
+                       WHERE NOT EXISTS (SELECT 1 FROM {0}
+                                         WHERE {0}Stage.Stock = {0}.Stock
+                                         AND {0}Stage.Date = {0}.Date)
+                   '''.format(table))
+
+# Pull wikipedia security table and load to database               
+def sec_master2db(security_table):
+    # Connect to database
+    engine = sqlconn('FinancialData')
+    
+    # Load pulled data to staging
+    security_table.to_sql(name='SecurityMasterStage', con=engine, if_exists = 'replace', index=False)
+    
+    # Use SQL to merge staging to table
+    engine.execute('''
+                   INSERT INTO SecurityMaster
+                       SELECT * FROM SecurityMasterStage
+                       WHERE NOT EXISTS (SELECT 1 FROM SecurityMaster
+                                         WHERE SecurityMasterStage.Stock = SecurityMaster.Stock)
                    ''')
 
 # Execution
 if __name__ == '__main__':
-    # Test
-    yahoo_hist_px2db('MSFT','20200501','20200301')
+    # index_hist_px2db('%5EGSPC','20200501','20170101')
+    yahoo_hist_px2db('%5EGSPC','20200501','20170101')
+    pass

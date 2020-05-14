@@ -96,4 +96,5 @@ def yahoo_hist_px(stock, day_end, day_start):
 # Execution
 if __name__ == '__main__':
     # Test
-    yahoo_hist_px('KSS','20200501','20200101')
+    #yahoo_hist_px('KSS','20200501','20200101')
+    pass
