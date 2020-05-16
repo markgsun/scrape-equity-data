@@ -68,8 +68,6 @@ def index_hist_price(idx, day_end, day_start):
 
 # Scrape constituent information from wikipedia
 def sec_master(idx):
-    idx = 'S&P 500'
-    
     # Get list of constituents
     constituents = wiki_index_cons(idx)
     
@@ -87,11 +85,12 @@ def sec_master(idx):
 
 # Execution
 if __name__ == '__main__':    
+    # index_hist_price('S&P 500','20200501','20170101')
     # index_hist_price('S&P 1000','20200501','20170101')
     
     # # Scrape constituent information
     # idx = 'S&P 500'
-    # sec_master(idx)
+    sec_master('S&P 1000')
     pass
     
     
