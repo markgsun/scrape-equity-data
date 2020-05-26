@@ -49,6 +49,9 @@ def yahoo_hist_px2db(stock, day_end, day_start):
 
 # Pull wikipedia security table and load to database               
 def sec_master2db(security_table):
+    # Table
+    table = 'SecurityMaster'
+    
     # Connect to database
     engine = sqlconn('FinancialData')
     
@@ -57,14 +60,37 @@ def sec_master2db(security_table):
     
     # Use SQL to merge staging to table
     engine.execute('''
-                   INSERT INTO SecurityMaster
-                       SELECT * FROM SecurityMasterStage
-                       WHERE NOT EXISTS (SELECT 1 FROM SecurityMaster
-                                         WHERE SecurityMasterStage.Stock = SecurityMaster.Stock)
-                   ''')
+                   INSERT INTO {0}
+                       SELECT * FROM {0}Stage
+                       WHERE NOT EXISTS (SELECT 1 FROM {0}
+                                         WHERE {0}Stage.Stock = {0}.Stock)
+                   '''.format(table))
+
+# Pull book to market ratios and load to database
+def yahoo_bk2mkt2db(stock):
+    # Table
+    table = 'Book2Market'
+    
+    # Connect to database
+    engine = sqlconn('FinancialData')
+    
+    # Use yahoo_scrape to pull data
+    bk2mkt = scrape.yahoo_bk2mkt(stock)
+    
+    # Load pulled data to staging
+    bk2mkt.to_sql(name = table+'Stage', con = engine, if_exists = 'replace', index = False)
+    
+    # Use SQL to merge staging to table
+    engine.execute('''
+                   INSERT INTO {0}
+                       SELECT * FROM {0}Stage
+                       WHERE NOT EXISTS (SELECT 1 FROM {0}
+                                         WHERE {0}Stage.Stock = {0}.Stock
+                                         AND {0}Stage.Date = {0}.Date)
+                   '''.format(table))
+
 
 # Execution
 if __name__ == '__main__':
-    # index_hist_px2db('%5EGSPC','20200501','20170101')
-    yahoo_hist_px2db('%5EGSPC','20200501','20170101')
+    
     pass

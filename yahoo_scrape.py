@@ -96,6 +96,7 @@ def yahoo_hist_px(stock, day_end, day_start):
     
     return px_table
 
+# Book to Market Ratios
 def yahoo_bk2mkt(stock):
     table = 'balance-sheet'
     
@@ -136,11 +137,12 @@ def yahoo_bk2mkt(stock):
     # Add stock name
     bk2mkt['Stock'] = stock
     
+    bk2mkt['Date'] = bk2mkt.index
+    
     return bk2mkt
 
 
 # Execution
 if __name__ == '__main__':
-    
     
     pass
