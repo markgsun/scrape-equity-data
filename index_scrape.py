@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # # Scrape constituent information
     # idx = 'S&P 500'
     # sec_master('S&P 1000')
-    
+        
     # index_bk2mkt('S&P 1000')
     
     idx = 'S&P 1000'
