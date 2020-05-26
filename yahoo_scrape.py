@@ -10,6 +10,7 @@ Pulls historical price table from Yahoo finance for particular stock and date ra
 # Packages
 import datetime as dt
 import lxml
+import numpy as np
 import pandas as pd
 import requests
 import scrape
@@ -25,12 +26,14 @@ def dt2epoch(dt_datetime):
     return date_str
 
 # Subdomain
-def subdomain(symbol, start, end, filter='history'):
-     subdoma='/quote/{0}/history?period1={1}&period2={2}&interval=1d&filter={3}&frequency=1d'
-     subdomain = subdoma.format(symbol, start, end, filter)
-     return subdomain
+def subdomain(symbol, start='', end='', filter='history'):
+    if filter == 'history':
+        subdoma='/quote/{0}/{3}?period1={1}&period2={2}&interval=1d&filter={3}&frequency=1d'.format(symbol, start, end, filter)
+    else:
+        subdoma = '/quote/{0}/{1}?'.format(symbol, filter)
+    return subdoma
 
-# Main function
+# Historical prices
 def yahoo_hist_px(stock, day_end, day_start):
     # Setup
     dt_temp = dt.datetime.strptime(day_end,'%Y%m%d')
@@ -93,8 +96,51 @@ def yahoo_hist_px(stock, day_end, day_start):
     
     return px_table
 
+def yahoo_bk2mkt(stock):
+    table = 'balance-sheet'
+    
+    # Domain and header
+    base_url = 'https://finance.yahoo.com'
+    sub = subdomain(stock,filter = table)
+    url = base_url + sub
+    header = scrape.header_function(base_url, sub)
+    
+    # Send request
+    page = requests.get(url, headers=header)
+    
+    # Read webpage
+    element_html = html.fromstring(page.content)
+    table = element_html.xpath("//div[contains(@class, 'D(tbr)')]")
+    
+    # Parse elements
+    table_list = []
+    for row in table:
+        row_el = row.xpath('./div')
+        for el in row_el:
+            text = str(el.xpath('.//span/text()[1]')).replace('[','').replace(']','').replace('\'','')
+            table_list.append(text)
+    
+    # Set index names
+    fin_table = pd.DataFrame(np.reshape(np.array(table_list),[-1,5])).set_index(0)
+    # Set column names
+    fin_table.columns = fin_table.iloc[0,]
+    fin_table.drop(fin_table.index[0])
+    # Drop apostrophes
+    fin_table = fin_table.replace({'\'':'',',':''}, regex = True)
+    
+    # Calculate book/market
+    mkt = pd.to_numeric(fin_table.loc['Total Capitalization',])
+    bk = pd.to_numeric(fin_table.loc['Common Stock Equity',])
+    bk2mkt = pd.DataFrame(data = {'bk2mkt':bk/mkt})
+    
+    # Add stock name
+    bk2mkt['Stock'] = stock
+    
+    return bk2mkt
+
+
 # Execution
 if __name__ == '__main__':
-    # Test
-    #yahoo_hist_px('KSS','20200501','20200101')
+    
+    
     pass
