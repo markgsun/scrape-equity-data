@@ -96,7 +96,7 @@ def index_bk2mkt(idx):
     # Run yahoo_hist_px2db for each constituent
     err = 0
     i = 0
-    while i <= len(constituents):
+    while i < len(constituents):
         # Load ticker
         tic = constituents.iloc[i,tic_index]
         try:
@@ -120,17 +120,13 @@ def index_bk2mkt(idx):
 
 # Execution
 if __name__ == '__main__':    
-    # index_hist_price('S&P 500','20200501','20170101')
-    # index_hist_price('S&P 1000','20200501','20170101')
-    
-    # # Scrape constituent information
-    # idx = 'S&P 500'
-    # sec_master('S&P 1000')
-        
     # index_bk2mkt('S&P 1000')
-    
     idx = 'S&P 1000'
-    constituents = wiki_index_cons(idx)
+    start = '20200501'
+    end = '20200605'
+    
+    sec_master(idx)
+    index_hist_price(idx,end,start)
     index_bk2mkt(idx)
     
     pass
