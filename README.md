@@ -15,6 +15,6 @@ Loads historical price table from yahoo finance and loads into local database ta
 *Uses yahoo_scrape.py*
 
 ### index_scrape.py
-Pulls index constituents from Wikipedia, then pulls historical price table from yahoo finance for all constituents
+Pulls index constituents from Wikipedia, then pulls historical price table and book-to-market ratios from yahoo finance for all constituents
 
 *Uses scrape.py, load_to_db.py*
